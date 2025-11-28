@@ -1,0 +1,195 @@
+{% extends 'inventory/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Dashboard - Pantry{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Dashboard</h1>
+        <div class="btn-group" role="group">
+            <a href="{% url 'inventory:inventory_entry_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add Inventory
+            </a>
+            <a href="{% url 'inventory:usage_log_create' %}" class="btn btn-secondary">
+                <i class="bi bi-clipboard-check"></i> Log Usage
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h3 class="text-black">{{ total_items }}</h3>
+                    <p class="text-muted mb-0">Total Items</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-secondary">
+                <div class="card-body text-center">
+                    <h3 class="text-black">{{ unique_items }}</h3>
+                    <p class="text-muted mb-0">Unique Items</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h3 class="text-black">{{ expiring_soon_count }}</h3>
+                    <p class="text-muted mb-0">Expiring Soon</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h3 class="text-black">{{ expired_count }}</h3>
+                    <p class="text-muted mb-0">Expired Items</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts Section -->
+    <div class="row mb-4">
+        <!-- Expiring Soon -->
+        <div class="col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header  text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Expiring Soon (7 days)</h5>
+                </div>
+                <div class="card-body">
+                    {% if expiring_soon %}
+                        <div class="list-group list-group-flush">
+                            {% for entry in expiring_soon %}
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>{{ entry.item.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                {{ entry.storage_location.name }} - {{ entry.quantity }} {{ entry.item.typical_quantity_unit }}
+                                            </small>
+                                        </div>
+                                        <span class="badge ">{{ entry.days_until_expiration }} days</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3 text-center">
+                            <a href="{% url 'inventory:inventory_list' %}?status=expiring" class="btn btn-sm btn-outline-success">
+                                View All
+                            </a>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-4">No items expiring soon!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Items -->
+        <div class="col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header  text-white">
+                    <h5 class="mb-0"><i class="bi bi-graph-down"></i> Low Stock</h5>
+                </div>
+                <div class="card-body">
+                    {% if low_stock_items %}
+                        <div class="list-group list-group-flush">
+                            {% for low_stock in low_stock_items %}
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>{{ low_stock.item.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                Current: {{ low_stock.current_quantity }} / Threshold: {{ low_stock.threshold }}
+                                            </small>
+                                        </div>
+                                        <a href="{% url 'inventory:item_detail' low_stock.item.pk %}" class="btn btn-sm btn-outline-success">
+                                            View
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-4">All items well stocked!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Storage Location Summary -->
+        <div class="col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header text-white">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Storage Locations</h5>
+                </div>
+                <div class="card-body">
+                    {% if storage_summary %}
+                        <div class="list-group list-group-flush">
+                            {% for location in storage_summary %}
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <span>{{ location.name }}</span>
+                                    <span class="badge bg-success rounded-pill">{{ location.item_count }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-4">No storage locations defined</p>
+                        <div class="text-center">
+                            <a href="{% url 'inventory:location_create' %}" class="btn btn-sm btn-outline-info">
+                                Add Location
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'inventory:inventory_list' %}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-list-check"></i><br>
+                                View Full Inventory
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'inventory:item_create' %}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-box-seam"></i><br>
+                                Add New Item
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'inventory:category_list' %}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-tags"></i><br>
+                                Manage Categories
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'inventory:location_list' %}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-geo-alt"></i><br>
+                                Manage Locations
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

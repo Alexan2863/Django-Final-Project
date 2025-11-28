@@ -80,6 +80,8 @@ class InventoryEntryAdmin(admin.ModelAdmin):
 
     def days_until_expiration(self, obj):
         days = obj.days_until_expiration()
+        if days is None:
+            return "-"
         if days < 0:
             return f"Expired {abs(days)} days ago"
         elif days == 0:

@@ -1,0 +1,60 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Storage Locations - Pantry{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-geo-alt"></i> Storage Locations</h1>
+        <a href="{% url 'inventory:location_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Location
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {% if locations %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Items Count</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for location in locations %}
+                                <tr>
+                                    <td><strong>{{ location.name }}</strong></td>
+                                    <td>{{ location.description|default:"-" }}</td>
+                                    <td><span class="badge bg-secondary">{{ location.item_count }}</span></td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'inventory:location_update' location.pk %}" class="btn btn-outline-success">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'inventory:location_delete' location.pk %}" class="btn btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-geo-alt" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3">No storage locations found</p>
+                    <a href="{% url 'inventory:location_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Add Your First Location
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

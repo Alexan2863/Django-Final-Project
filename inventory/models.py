@@ -102,17 +102,25 @@ class InventoryEntry(models.Model):
 
     def days_until_expiration(self):
         """Calculate days until expiration"""
+        if not self.expiration_date:
+            return None
         from datetime import date
         delta = self.expiration_date - date.today()
         return delta.days
 
     def is_expiring_soon(self, days=7):
         """Check if item is expiring within specified days"""
-        return 0 <= self.days_until_expiration() <= days
+        days_until = self.days_until_expiration()
+        if days_until is None:
+            return False
+        return 0 <= days_until <= days
 
     def is_expired(self):
         """Check if item has expired"""
-        return self.days_until_expiration() < 0
+        days_until = self.days_until_expiration()
+        if days_until is None:
+            return False
+        return days_until < 0
 
 
 class UsageLog(models.Model):
